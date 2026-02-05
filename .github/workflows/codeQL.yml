@@ -9,17 +9,32 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      # required for all workflows
       security-events: write
       actions: read
       contents: read
 
+    # 1. Added language matrix strategy
+    strategy:
+      fail-fast: false
+      matrix:
+        # CodeQL supports: 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby', 'swift'
+        language: ['java', 'python']
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v3
+        with:
+          # 2. Use the matrix to determine the language for this job run
+          languages: ${{ matrix.language }}
+          # 3. Use your custom configuration file as input
+          config-file: ./.github/codeql/codeql-config.yml
+
+      # 4. Added Autobuild (Required for compiled languages like Java)
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v3
